@@ -36,10 +36,55 @@ class STTClient {
       print(response.statusCode.toString());
       Map<String, dynamic> resultMap = jsonDecode(response.body);
       String sentence = resultMap['words_list'][0];
-      return sentence;
+
+      return getNer(sentence);
     } else {
       print(response.statusCode.toString());
       throw Exception('Failed to request server.');
+    }
+  }
+
+  Future<String> getNer(String body) {
+    return _getNer(
+      Uri.parse('http://140.116.245.157:2001'),
+      body,
+    );
+  }
+
+  Future<String> _getNer(
+      Uri url,
+      String body,
+      ) async {
+    try {
+      final response = await http.post(
+        url,
+        body: {"data":body, "token":'XXX'},
+      );
+      if (response.statusCode == 200) {
+        String nerInformation='';
+        String data = response.body;
+        var decodedData = jsonDecode(data);
+        print(decodedData);
+        for(int i=0;i<decodedData['ner'][0].length;i++){
+          if(decodedData['ner'][0][i][2]=='LOC'){
+            print('地點:'+decodedData['ner'][0][i][3]);
+            nerInformation='地點 :'+'${decodedData['ner'][0][i][3]}\n';
+          }
+        }
+        for(int i=0;i<decodedData['ner'][0].length;i++) {
+          if (decodedData['ner'][0][i][2] == 'DATE') {
+            print('時間:' + decodedData['ner'][0][i][3]);
+            nerInformation+='時間 :'+'${decodedData['ner'][0][i][3]}';
+          }
+        }
+        if(nerInformation=='')
+          return "未包含時間、地點\n再說一次";
+        return nerInformation;
+      } else {
+        return response.body;
+      }
+    } catch (e) {
+      return e.toString();
     }
   }
 }

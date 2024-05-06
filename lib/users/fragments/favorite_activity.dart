@@ -50,7 +50,9 @@ class _FavoriteActivityPageState extends State<FavoriteActivityPage> {
                 print("snapshot.error");
               }
 
-              return snapshot.hasData? ListView.builder(
+              return snapshot.hasData? GridView.builder(
+                gridDelegate:
+                SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
                 itemCount: favoriteActivity.length,
                 itemBuilder: (context,index){
                   List list =snapshot.data;
@@ -64,8 +66,15 @@ class _FavoriteActivityPageState extends State<FavoriteActivityPage> {
                   }
                   return Card(
                     color: Colors.blue[50],
-                    child: Row(
+                    child:Column(
                       children: [
+                        AspectRatio(
+                          aspectRatio: 20/12,
+                          child: Image.network(
+                            "https://janstockcoin.com/wp-content/uploads/2021/06/pexels-photo-747964-2048x1293.jpeg",
+                            fit: BoxFit.cover,
+                          ),
+                        ),
                         Expanded(
                           child:ListTile(
                             title: Text(cool[index]["activity_place"]),

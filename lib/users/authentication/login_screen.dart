@@ -12,6 +12,7 @@ import 'dart:convert';
 import 'package:with_database/users/userPreferences/user_preferences.dart';
 var myName='';
 var myEmail='';
+int myID=0;
 List myInfo=[];
 class  LoginScreen extends StatefulWidget
 {
@@ -42,6 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
           User userInfo=User.fromJson(resBodyOfLogin['userData']);
           await RememberUserPrefs.saveRememberUser(userInfo);
           myName=userInfo.user_name;
+          myID=userInfo.user_id;
 
           //print(myName);
           Get.to(DashboardOfFragments());

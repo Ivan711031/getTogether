@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:record/record.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:with_database/api/STT.dart';
@@ -11,6 +13,7 @@ import 'package:with_database/users/model/activity.dart';
 import 'package:with_database/api_connection/api_connection.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:with_database/users/authentication/login_screen.dart';
+import 'package:with_database/users/fragments/home_page.dart';
 class SpeechRecognitionPage extends StatefulWidget {
   const SpeechRecognitionPage({Key? key}) : super(key: key);
 
@@ -38,19 +41,28 @@ class _SpeechRecognitionPageState extends State<SpeechRecognitionPage> {
   List<String> modelList = [];
   bool isRecord = false;
   String speechRecognitionAudioPath = "";
+  String nersentence ="";
   bool isNeedSendSpeechRecognition = false;
   String base64String = "";
   var formKey=GlobalKey<FormState>();
   var placeController =TextEditingController();
   var timeController = TextEditingController();
   var activityController =TextEditingController();
+  var totalPeopleController =TextEditingController();
+  var actualPlaceController =TextEditingController();
+  var attentionController=TextEditingController();
+  var nerInformation ='';
+  DateTime dateTime = DateTime.now();
   createActivity()async{
     Activity activityModel=Activity(
         1,
         activityController.text.trim(),
         placeController.text.trim(),
-        timeController.text.trim(),
-        myName
+        dateTime.toString().substring(0,10),
+        myName,
+        totalPeopleController.text.trim(),
+        actualPlaceController.text.trim(),
+        attentionController.text.trim()
     );
     try{
       var res=await http.post(
@@ -75,6 +87,50 @@ class _SpeechRecognitionPageState extends State<SpeechRecognitionPage> {
     }
 
   }
+
+  Future<String> getNer(String body) {
+    return _getNer(
+      Uri.parse('http://140.116.245.157:2001'),
+      body,
+    );
+  }
+
+  Future<String> _getNer(
+      Uri url,
+      String body,
+      ) async {
+    try {
+      final response = await http.post(
+        url,
+        body: {"data":body, "token":'XXX'},
+      );
+      if (response.statusCode == 200) {
+        String data = response.body;
+        var decodedData = jsonDecode(data);
+        print(decodedData);
+        nerInformation='';
+        for(int i=0;i<decodedData['ner'][0].length;i++){
+          if(decodedData['ner'][0][i][2]=='LOC'){
+            print('地點:'+decodedData['ner'][0][i][3]);
+            nerInformation='地點 :'+'${decodedData['ner'][0][i][3]}\n';
+          }
+        }
+        for(int i=0;i<decodedData['ner'][0].length;i++) {
+          if (decodedData['ner'][0][i][2] == 'DATE') {
+            print('時間:' + decodedData['ner'][0][i][3]);
+            nerInformation+='時間 :'+'${decodedData['ner'][0][i][3]}';
+          }
+        }
+        return decodedData;
+      } else {
+        return response.body;
+      }
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
+
 
   List<String> items = [
     "華語",
@@ -116,8 +172,8 @@ class _SpeechRecognitionPageState extends State<SpeechRecognitionPage> {
           backgroundColor: Colors.orange[100],
           centerTitle: true,
         ),
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        body: ListView(
+          //crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
               child: Padding(
@@ -128,117 +184,216 @@ class _SpeechRecognitionPageState extends State<SpeechRecognitionPage> {
                       key:formKey,
                       child: Column(
                         children: [
-                          TextFormField(
-                            controller: placeController,
-                            decoration: InputDecoration(
-                                prefixIcon: const Icon(
-                                    Icons.place
-                                ),
-                                hintText:"  地點",
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(30),
-                                    borderSide: const BorderSide(
-                                        color: Colors.white60
-                                    )
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(30),
-                                    borderSide: const BorderSide(
-                                        color: Colors.white60
-                                    )
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(30),
-                                    borderSide: const BorderSide(
-                                        color: Colors.white60
-                                    )
-                                ),
-                                disabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(30),
-                                    borderSide: const BorderSide(
-                                        color: Colors.white60
-                                    )
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 14,
-                                    vertical: 6
-                                ),
-                                fillColor: Colors.white,
-                                filled: true
-                            ),
+                          Row(
+                            children:[
+                              SizedBox(
+                                width: 175,
+                                child:TextFormField(
+                                  controller: placeController,
+                                  decoration: InputDecoration(
+                                      prefixIcon: const Icon(
+                                          Icons.place
+                                      ),
+                                      hintText:"  地點",
+                                      border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(30),
+                                          borderSide: const BorderSide(
+                                              color: Colors.black12
+                                          )
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(30),
+                                          borderSide: const BorderSide(
+                                              color: Colors.black12
+                                          )
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(30),
+                                          borderSide: const BorderSide(
+                                              color: Colors.black12
+                                          )
+                                      ),
+                                      disabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(30),
+                                          borderSide: const BorderSide(
+                                              color: Colors.black12
+                                          )
+                                      ),
+                                      contentPadding: const EdgeInsets.symmetric(
+                                          horizontal: 14,
+                                          vertical: 6
+                                      ),
+                                      fillColor: Colors.white,
+                                      filled: true
+                                  ),
 
-                          ),
-                          const SizedBox(height: 30,),
-                          TextFormField(
-                            controller: timeController,
-                            decoration: InputDecoration(
-                                prefixIcon: const Icon(
-                                    Icons.calendar_month
                                 ),
-                                hintText:"  時間(幾月幾號)",
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(30),
-                                    borderSide: const BorderSide(
-                                        color: Colors.white60
-                                    )
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(30),
-                                    borderSide: const BorderSide(
-                                        color: Colors.white60
-                                    )
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(30),
-                                    borderSide: const BorderSide(
-                                        color: Colors.white60
-                                    )
-                                ),
-                                disabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(30),
-                                    borderSide: const BorderSide(
-                                        color: Colors.white60
-                                    )
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 14,
-                                    vertical: 6
-                                ),
-                                fillColor: Colors.white,
-                                filled: true
-                            ),
+                              ),
+                              SizedBox(
+                                width: 175,
+                                child:TextFormField(
+                                  controller: activityController,
+                                  decoration: InputDecoration(
+                                      prefixIcon: const Icon(
+                                          Icons.directions_walk
+                                      ),
+                                      hintText:"  活動(例如:爬山、賞雪)",
+                                      border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(30),
+                                          borderSide: const BorderSide(
+                                              color: Colors.white60
+                                          )
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(30),
+                                          borderSide: const BorderSide(
+                                              color: Colors.black12
+                                          )
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(30),
+                                          borderSide: const BorderSide(
+                                              color: Colors.black12
+                                          )
+                                      ),
+                                      disabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(30),
+                                          borderSide: const BorderSide(
+                                              color: Colors.black12
+                                          )
+                                      ),
+                                      contentPadding: const EdgeInsets.symmetric(
+                                          horizontal: 14,
+                                          vertical: 6
+                                      ),
+                                      fillColor: Colors.white,
+                                      filled: true
+                                  ),
 
+                                ),
+                              ),
+                            ]
                           ),
-                          const SizedBox(height: 30,),
+                          const SizedBox(height: 20,),
+                          Row(
+                            children: [
+                              SizedBox(
+                                width: 175,
+                                child:TextFormField(
+                                  controller: totalPeopleController,
+                                  decoration: InputDecoration(
+                                      prefixIcon: const Icon(
+                                          Icons.directions_walk
+                                      ),
+                                      hintText:"  預計人數",
+                                      border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(30),
+                                          borderSide: const BorderSide(
+                                              color: Colors.black12
+                                          )
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(30),
+                                          borderSide: const BorderSide(
+                                              color: Colors.black12
+                                          )
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(30),
+                                          borderSide: const BorderSide(
+                                              color: Colors.black12
+                                          )
+                                      ),
+                                      disabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(30),
+                                          borderSide: const BorderSide(
+                                              color: Colors.black12
+                                          )
+                                      ),
+                                      contentPadding: const EdgeInsets.symmetric(
+                                          horizontal: 14,
+                                          vertical: 6
+                                      ),
+                                      fillColor: Colors.white,
+                                      filled: true
+                                  ),
+                                ),
+                              ),
+                              SizedBox(
+                                width: 175,
+                                child:TextFormField(
+                                  controller: actualPlaceController,
+                                  decoration: InputDecoration(
+                                      prefixIcon: const Icon(
+                                          Icons.directions_walk
+                                      ),
+                                      hintText:"  集合地址",
+                                      border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(30),
+                                          borderSide: const BorderSide(
+                                              color: Colors.black12
+                                          )
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(30),
+                                          borderSide: const BorderSide(
+                                              color: Colors.black12
+                                          )
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(30),
+                                          borderSide: const BorderSide(
+                                              color: Colors.black12
+                                          )
+                                      ),
+                                      disabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(30),
+                                          borderSide: const BorderSide(
+                                              color: Colors.black12
+                                          )
+                                      ),
+                                      contentPadding: const EdgeInsets.symmetric(
+                                          horizontal: 14,
+                                          vertical: 6
+                                      ),
+                                      fillColor: Colors.white,
+                                      filled: true
+                                  ),
+
+                                ),
+                              ),
+                            ]
+                          ),
+                          const SizedBox(height:30),
                           TextFormField(
-                            controller: activityController,
+                            controller: attentionController,
                             decoration: InputDecoration(
                                 prefixIcon: const Icon(
                                     Icons.directions_walk
                                 ),
-                                hintText:"  活動(例如:爬山、賞雪)",
+                                hintText:"  備註",
                                 border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(30),
                                     borderSide: const BorderSide(
-                                        color: Colors.white60
+                                        color: Colors.black12
                                     )
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(30),
                                     borderSide: const BorderSide(
-                                        color: Colors.white60
+                                        color: Colors.black12
                                     )
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(30),
                                     borderSide: const BorderSide(
-                                        color: Colors.white60
+                                        color: Colors.black12
                                     )
                                 ),
                                 disabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(30),
                                     borderSide: const BorderSide(
-                                        color: Colors.white60
+                                        color: Colors.black12
                                     )
                                 ),
                                 contentPadding: const EdgeInsets.symmetric(
@@ -248,7 +403,26 @@ class _SpeechRecognitionPageState extends State<SpeechRecognitionPage> {
                                 fillColor: Colors.white,
                                 filled: true
                             ),
-
+                          ),
+                          SizedBox(height: 30,),
+                          SizedBox(
+                              height: 50,
+                              width:1000,
+                              child:ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.white
+                                ),
+                                onPressed: () {
+                                  DatePicker.showDatePicker(context, showTitleActions: true, onConfirm: (date) {
+                                    setState(() {
+                                      dateTime = date;
+                                    });
+                                  }, currentTime: dateTime, locale:LocaleType.zh);
+                                  print(dateTime.toString());
+                                },
+                                icon:const Icon(Icons.calendar_month,),
+                                label:Text(DateFormat("yyyy-MM-dd").format(dateTime)),
+                              )
                           ),
                           const SizedBox(height:30),
                           Material(
@@ -289,7 +463,7 @@ class _SpeechRecognitionPageState extends State<SpeechRecognitionPage> {
             ),
             // 上半部
             Expanded(
-              child: Padding(
+            child:Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Center(
                   child: (isNeedSendSpeechRecognition)
@@ -311,28 +485,31 @@ class _SpeechRecognitionPageState extends State<SpeechRecognitionPage> {
                           print('請求成功');
                           String sentence = snapshot.data.toString();
                           print(sentence);
+                          //nersentence = sentence;
+                          //getNer(nersentence);
                           isNeedSendSpeechRecognition = false;
+                            return Text(
+                              sentence,
+                              style: const TextStyle(fontSize: 32),
+                            );
+                          } else {
+                            // 請求未結束，顯示loading
+                            print('辨識中...');
+                            isNeedSendSpeechRecognition = false;
+                            return const Center(
+                              child: SizedBox(
+                                  height: 50,
+                                  width: 50,
+                                  child: CircularProgressIndicator()),
+                            );
+                          }
 
-                          return Text(
-                            sentence,
-                            style: const TextStyle(fontSize: 32),
-                          );
-                        } else {
-                          // 請求未結束，顯示loading
-                          print('辨識中...');
-                          isNeedSendSpeechRecognition = false;
-                          return const Center(
-                            child: SizedBox(
-                                height: 50,
-                                width: 50,
-                                child: CircularProgressIndicator()),
-                          );
-                        }
                       })
-                      :  Center(),
+                      :  SizedBox(height: 100,)
                 ),
               ),
             ),
+
             // 下半部
             Center(
               child: Column(

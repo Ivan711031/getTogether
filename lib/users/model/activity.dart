@@ -6,6 +6,9 @@ class Activity{
   String activity_place;
   String activity_time;
   String activity_holder;
+  String activity_total_people;
+  String activity_actual_place;
+  String activity_attention;
 
   Activity(
       this.activity_id,
@@ -13,6 +16,9 @@ class Activity{
       this.activity_place,
       this.activity_time,
       this.activity_holder,
+      this.activity_total_people,
+      this.activity_actual_place,
+      this.activity_attention
       );
 
   Map<String,dynamic> toJson()=>{
@@ -21,6 +27,9 @@ class Activity{
     'activity_place':activity_place,
     'activity_time':activity_time,
     'activity_holder':activity_holder,
+    'activity_total_people':activity_total_people.toString(),
+    'activity_actual_place':activity_actual_place,
+    'activity_attention':activity_attention,
   };
 
   factory Activity.fromJson(Map<String,dynamic> json)=>Activity(
@@ -28,6 +37,9 @@ class Activity{
     json["activity_name"],
     json["activity_place"],
     json["activity_time"],
-    json["activity_holder"]
+    json["activity_holder"],
+    json["activity_total_people"],
+    json["activity_actual_place"],
+    json["activity_attention"]
   );
 }

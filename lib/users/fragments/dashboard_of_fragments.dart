@@ -30,15 +30,25 @@ class _DashboardOfFragmentsState extends State<DashboardOfFragments> {
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
+            icon: Icon(
+              Icons.home,
+              size: 70,
+            ),
             label: '主畫面',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.directions_walk),
+            icon: Icon(
+              Icons.directions_walk,
+              size: 70,
+            ),
             label: '活動',
+
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.add_outlined),
+            icon: Icon(
+              Icons.add_outlined,
+              size:70,
+            ),
             label: '開團',
           ),
         ],
