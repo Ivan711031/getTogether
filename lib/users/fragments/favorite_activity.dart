@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart'as http;
 import 'package:with_database/api_connection/api_connection.dart';
 import 'package:with_database/users/fragments/activity_page.dart';
+
+import 'new_activity_information.dart';
 class FavoriteActivityPage extends StatefulWidget {
   const FavoriteActivityPage({Key? key}) : super(key: key);
 
@@ -64,25 +66,80 @@ class _FavoriteActivityPageState extends State<FavoriteActivityPage> {
                       }
                     }
                   }
-                  return Card(
-                    color: Colors.blue[50],
-                    child:Column(
-                      children: [
-                        AspectRatio(
-                          aspectRatio: 20/12,
-                          child: Image.network(
-                            "https://janstockcoin.com/wp-content/uploads/2021/06/pexels-photo-747964-2048x1293.jpeg",
-                            fit: BoxFit.cover,
+                  return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                NewActivityInformationPage(data: cool[index],),
+                            //SpeechSynthesisPage(yoyo:'我超酷')
                           ),
-                        ),
-                        Expanded(
-                          child:ListTile(
-                            title: Text(cool[index]["activity_place"]),
-                            subtitle: Text(cool[index]["activity_name"]),
-                          ),
-                        )
-                      ],
-                    ),
+                        );
+                      },
+                      child: Card(
+                          elevation: 10,
+                          margin: const EdgeInsets.all(10),
+                          color: Colors.orange[50],
+                          child:Column(
+                            children: [
+                              Container(
+                                width: 200,
+                                height: 108,
+                                clipBehavior: Clip.hardEdge,
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.only(
+                                        topLeft: Radius.circular(20),
+                                        topRight: Radius.circular(20)
+                                    )
+                                ),
+                                child: Image.asset(
+                                  'assets/風景2.jpg',
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  IconButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          if (favoriteActivity.contains(
+                                              cool[index]['activity_id'])) {
+                                            favoriteActivity.remove(
+                                                cool[index]['activity_id']);
+                                          } else {
+                                            favoriteActivity
+                                                .add(
+                                                cool[index]['activity_id']);
+                                          }
+                                          debugPrint(
+                                              favoriteActivity.toString());
+                                        });
+                                      },
+                                      icon: (favoriteActivity.contains(
+                                          cool[index]['activity_id']) ==
+                                          true)
+                                          ? Icon(Icons.favorite)
+                                          : Icon(Icons.favorite_border)),
+                                  Expanded(
+                                    child: ListTile(
+                                      title: Text(
+                                        cool[index]["activity_place"],
+                                        style:TextStyle(fontSize: 20),
+                                      ),
+
+                                      subtitle: Text(
+                                        cool[index]["activity_name"],
+                                        style:TextStyle(fontSize: 18),
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              ),
+
+                            ],
+                          )
+                      )
                   );
                 },
               ) :const Center(child: CircularProgressIndicator(),);

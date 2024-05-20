@@ -1,6 +1,6 @@
 class API{
-  static const hostConnect="http://192.168.1.110/api_gettogether" ;
-  static const hostConnectUser="http://192.168.1.110/api_gettogether/user" ;
+  static const hostConnect="http://192.168.1.104/api_gettogether" ;
+  static const hostConnectUser="http://192.168.1.104/api_gettogether/user" ;
 
   //signup user
   static const validateEmail="$hostConnect/user/validate_email.php";

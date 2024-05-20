@@ -7,6 +7,7 @@ import 'package:with_database/users/fragments/activity_information.dart';
 import 'package:with_database/users/fragments/favorite_activity.dart';
 import 'package:with_database/users/fragments/home_page.dart';
 import 'package:with_database/users/authentication/login_screen.dart';
+import 'package:with_database/users/fragments/small_speech.dart';
 
 import 'new_activity_information.dart';
 List<String> favoriteActivity=[];
@@ -139,9 +140,8 @@ class _ActivityPageState extends State<ActivityPage> {
                               context,
                               MaterialPageRoute(
                                 builder: (context) =>
-                                    NewActivityInformationPage(
-                                      data: list[index],
-                                    ),
+                                    NewActivityInformationPage(data: list[index],),
+                                //SpeechSynthesisPage(yoyo:'我超酷')
                               ),
                             );
                           },
@@ -162,7 +162,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                       )
                                   ),
                                   child: Image.asset(
-                                    'assets/play_store_512.png',
+                                    'assets/風景2.jpg',
                                     fit: BoxFit.cover,
                                   ),
                                 ),

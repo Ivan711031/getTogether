@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:intl/intl.dart';
@@ -20,21 +21,7 @@ class SpeechRecognitionPage extends StatefulWidget {
   @override
   State<SpeechRecognitionPage> createState() => _SpeechRecognitionPageState();
 }
-class TextFieldAndCheckPage extends StatefulWidget {
-  @override
-  State<StatefulWidget> createState() => TextFieldAndCheckPageState();
-}
 
-class TextFieldAndCheckPageState extends State<TextFieldAndCheckPage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(appBar: AppBar(
-      automaticallyImplyLeading: false,
-      title: Text('输入和选择'),
-    ),body:TextField(),
-    );
-  }
-}
 
 class _SpeechRecognitionPageState extends State<SpeechRecognitionPage> {
   bool isLoadedModelList = false;
@@ -53,6 +40,26 @@ class _SpeechRecognitionPageState extends State<SpeechRecognitionPage> {
   var attentionController=TextEditingController();
   var nerInformation ='';
   DateTime dateTime = DateTime.now();
+  getActual(String place)async{
+    var url = Uri.parse('https://maps.googleapis.com/maps/api/geocode/json?address='+place+'&key=AIzaSyC_G7mh74MvW-NwaAFBb-l3Qrx3m5f8R-w');
+    http.Response response = await http.get(url);
+    try {
+      if (response.statusCode == 200) {
+        String data = response.body;
+        var decodedData = jsonDecode(data);
+        print(decodedData);
+        print(decodedData['results'][0]['geometry']['location']['lat']);
+        return decodedData['results'][0]['geometry']['location']['lat'];
+
+      } else {
+        Fluttertoast.showToast(msg: '發生錯誤，再試一次!');
+      }
+    } catch (e) {
+      print(e.toString());
+    }
+
+  }
+
   createActivity()async{
     Activity activityModel=Activity(
         1,
@@ -144,7 +151,7 @@ class _SpeechRecognitionPageState extends State<SpeechRecognitionPage> {
   String selectedLanguage = "華語";
   AudioEncoder encoder = AudioEncoder.wav;
 
-  Future<String> askForService(String base64String, String model) {
+  Future<dynamic> askForService(String base64String, String model) {
     return STTClient().askForService(base64String, model);
   }
 
@@ -438,7 +445,7 @@ class _SpeechRecognitionPageState extends State<SpeechRecognitionPage> {
                                 });
 
                               },
-                              child: const Padding(
+                              child: Padding(
                                 padding: EdgeInsets.symmetric(
                                     horizontal: 28,
                                     vertical: 10
@@ -462,9 +469,9 @@ class _SpeechRecognitionPageState extends State<SpeechRecognitionPage> {
               ),
             ),
             // 上半部
-            Expanded(
-            child:Padding(
-                padding: const EdgeInsets.all(8.0),
+
+            Padding(
+                padding: EdgeInsets.all(8.0),
                 child: Center(
                   child: (isNeedSendSpeechRecognition)
                       ? FutureBuilder(
@@ -474,7 +481,7 @@ class _SpeechRecognitionPageState extends State<SpeechRecognitionPage> {
                           // 請求失敗，顯示錯誤
                           print('askForService() 請求失敗');
                           isNeedSendSpeechRecognition = false;
-                          return const Center(
+                          return Center(
                             child: Text(
                               '辨識失敗',
                               style: TextStyle(fontSize: 40),
@@ -488,15 +495,21 @@ class _SpeechRecognitionPageState extends State<SpeechRecognitionPage> {
                           //nersentence = sentence;
                           //getNer(nersentence);
                           isNeedSendSpeechRecognition = false;
+                          // SchedulerBinding.instance.addPostFrameCallback((_) {
+                          //   setState(() {
+                          //     placeController.text = snapshot.data['place'];
+                          //   }
+                          //   );
+                          // });
                             return Text(
-                              sentence,
-                              style: const TextStyle(fontSize: 32),
+                              '時間: '+snapshot.data['time']+'\n'+'地點: '+snapshot.data['place']+'\n'+'活動: 爬山',
+                              style:TextStyle(fontSize: 32),
                             );
                           } else {
                             // 請求未結束，顯示loading
                             print('辨識中...');
                             isNeedSendSpeechRecognition = false;
-                            return const Center(
+                            return Center(
                               child: SizedBox(
                                   height: 50,
                                   width: 50,
@@ -508,7 +521,6 @@ class _SpeechRecognitionPageState extends State<SpeechRecognitionPage> {
                       :  SizedBox(height: 100,)
                 ),
               ),
-            ),
 
             // 下半部
             Center(

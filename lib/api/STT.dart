@@ -4,7 +4,7 @@ class STTClient {
   final String token =
       "btRkfZr5Ndy2tkpnRfZ3b9ER9ndEC6rxYEg5Vu8XCCuK85KRDKw9cFhcYQ3VdXBQ";
 
-  Future<String> askForService(String base64String, String language) async {
+  Future<dynamic> askForService(String base64String, String language) async {
     // var fileBytes = await File(speechRecognitionAudioPath).readAsBytes();
     // base64String = base64Encode(fileBytes);
     // language can set ("華語", "台語", "華台雙語", "客語", "英語", "印尼語", "粵語")
@@ -36,8 +36,8 @@ class STTClient {
       print(response.statusCode.toString());
       Map<String, dynamic> resultMap = jsonDecode(response.body);
       String sentence = resultMap['words_list'][0];
-
-      return getNer(sentence);
+      print(sentence);
+      return getPlace(sentence);
     } else {
       print(response.statusCode.toString());
       throw Exception('Failed to request server.');
@@ -87,4 +87,51 @@ class STTClient {
       return e.toString();
     }
   }
+
+  Future<dynamic> getPlace(String body) {
+    return _getPlace(
+      Uri.parse('http://140.116.245.157:2001'),
+      body,
+    );
+  }
+
+  Future<dynamic> _getPlace(
+      Uri url,
+      String body,
+      ) async {
+    try {
+      final response = await http.post(
+        url,
+        body: {"data":body, "token":'XXX'},
+      );
+      if (response.statusCode == 200) {
+        var nerInformation={
+          'key':'cool',
+          'place':'再說一次',
+          'time':'再說一次',
+        };
+        String data = response.body;
+        var decodedData = jsonDecode(data);
+        print(decodedData);
+        for(int i=0;i<decodedData['ner'][0].length;i++){
+          if(decodedData['ner'][0][i][2]=='LOC'){
+            print('地點:'+decodedData['ner'][0][i][3]);
+            nerInformation['place']='${decodedData['ner'][0][i][3]}';
+          }
+        }
+        for(int i=0;i<decodedData['ner'][0].length;i++) {
+          if (decodedData['ner'][0][i][2] == 'DATE') {
+            print('時間:' + decodedData['ner'][0][i][3]);
+            nerInformation['time']='${decodedData['ner'][0][i][3]}';
+          }
+        }
+        return nerInformation;
+      } else {
+        return response.body;
+      }
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
 }

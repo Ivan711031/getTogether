@@ -1,13 +1,18 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:with_database/users/authentication/login_screen.dart';
 import 'package:http/http.dart'as http;
+import 'package:with_database/users/fragments/map_page.dart';
 import 'package:with_database/users/model/order.dart';
+import '../../api/TTS.dart';
 import '../../api_connection/api_connection.dart';
+import 'package:with_database/users/fragments/small_speech.dart';
 
 class TitleSection extends StatelessWidget {
   const TitleSection({
@@ -77,14 +82,14 @@ class ImageSection extends StatelessWidget {
     return Image.asset(
       image,
       width: 600,
-      height: 240,
+      height: 180,
       fit: BoxFit.cover,
     );
   }
 }
 
 
-
+int a =1;
 
 
 
@@ -108,13 +113,48 @@ class TextSection extends StatelessWidget {
     );
   }
 }
+//
+class NewActivityInformationPage extends StatefulWidget {
+  const NewActivityInformationPage({Key? key,required this.data}) : super(key: key);
+  final Map<String, dynamic> data;
 
-class NewActivityInformationPage extends StatelessWidget {
-  const NewActivityInformationPage(
-      {Key? key, required this.data})
-      : super(key: key);
+  @override
+  State<NewActivityInformationPage> createState() => _NewActivityInformationPageState(data:this.data);
+}
+//
+class _NewActivityInformationPageState extends State<NewActivityInformationPage> {
 
   final Map<String, dynamic> data;
+  _NewActivityInformationPageState({required this.data});
+
+  gotoMap()async{
+    var url = Uri.parse('https://maps.googleapis.com/maps/api/geocode/json?address='+data['activity_place']+'&key=AIzaSyC_G7mh74MvW-NwaAFBb-l3Qrx3m5f8R-w');
+    http.Response response = await http.get(url);
+    try {
+      if (response.statusCode == 200) {
+        String data = response.body;
+        var decodedData = jsonDecode(data);
+        print(decodedData);
+        print(decodedData['results'][0]['geometry']['location']['lat']);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                MapPage(
+                    lat:decodedData['results'][0]['geometry']['location']['lat'],
+                    lng:decodedData['results'][0]['geometry']['location']['lng']
+                ),
+          ),
+        );
+
+      } else {
+        Fluttertoast.showToast(msg: '發生錯誤，再試一次!');
+      }
+    } catch (e) {
+      print(e.toString());
+    }
+
+  }
 
   joinActivity()async{
     Order orderModel=Order(
@@ -158,11 +198,13 @@ class NewActivityInformationPage extends StatelessWidget {
         var resBodyOfSignUp= jsonDecode(res.body);
         if(resBodyOfSignUp['success']==true){
           Fluttertoast.showToast(msg: '挖草!');
+
           print(myName);
 
         }
         else{
           Fluttertoast.showToast(msg: '發生錯誤，再試一次!');
+          print('');
         }
       }
     }
@@ -186,8 +228,9 @@ class NewActivityInformationPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
 
-          //ImageSection(image: 'assets/login2.jpeg'),
+          //ImageSection(image: 'assets/陽明山.jpg'),
           TitleSection(name: data['activity_place'],location: data['activity_name'],current:data['activity_current_people'],total: data['activity_total_people'],),
+
 
           SizedBox(
             child: Row(
@@ -198,7 +241,7 @@ class NewActivityInformationPage extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       IconButton(
-                          onPressed: (){
+                          onPressed: () {
                             currentPlus1();
                             joinActivity();
                           },
@@ -209,7 +252,7 @@ class NewActivityInformationPage extends StatelessWidget {
                         child: Text(
                           '參加活動',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 14,
                             fontWeight: FontWeight.w400,
                             color: Colors.black,
                           ),
@@ -221,12 +264,7 @@ class NewActivityInformationPage extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      IconButton(
-                          onPressed: (){
-
-                          },
-                          icon: const Icon(Icons.volume_up_rounded)
-                      ),
+                      SpeechSynthesisPage(data:data),
                       Padding(
                         padding: const EdgeInsets.only(top: 4),
                         child: Text(
@@ -239,10 +277,41 @@ class NewActivityInformationPage extends StatelessWidget {
                         ),
                       ),
                     ]
+                ),
+                Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                          onPressed: () {
+                            gotoMap();
+                            // Navigator.push(
+                            //   context,
+                            //   MaterialPageRoute(
+                            //     builder: (context) =>
+                            //         MapPage(),
+                            //   ),
+                            // );
+                          },
+                          icon: const Icon(Icons.map)
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          '地圖',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                    ]
                 )
               ],
             )
           ),
+          SizedBox(height: 10,),
           TextSection(description:
           data["activity_time"]
           ),

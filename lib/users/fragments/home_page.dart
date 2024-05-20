@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:table_calendar/table_calendar.dart';
 import 'package:with_database/users/authentication/login_screen.dart';
 import 'package:with_database/users/fragments/user_profile.dart';
 import 'dart:convert';
@@ -10,6 +11,7 @@ import 'package:with_database/api_connection/api_connection.dart';
 import 'package:with_database/users/fragments/activity_information.dart';
 import 'package:with_database/users/fragments/favorite_activity.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
+import 'new_activity_information.dart';
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
@@ -18,6 +20,7 @@ class HomePage extends StatefulWidget {
 }
 class _HomePageState extends State<HomePage> {
   @override
+  DateTime today=DateTime.now();
   Future<dynamic> getActivity()async{
     var url = Uri.parse(API.timeActivity);
     http.Response response = await http.get(url);
@@ -106,9 +109,12 @@ class _HomePageState extends State<HomePage> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: Text('作伙來出遊'),
+          leading: Image.asset('assets/有色人種1.png'),
+          title: Text('作伙',
+            style: TextStyle(fontSize: 30),
+          ),
           backgroundColor: Colors.orange[100],
-          centerTitle: true,
+          centerTitle: false,
           actions: [
             IconButton(
                 onPressed:(){
@@ -125,26 +131,26 @@ class _HomePageState extends State<HomePage> {
             )
           ],
         ),
-        body: Column(
+        body: ListView(
+          //crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Align(
               alignment: Alignment.centerLeft,
               child: SizedBox(
-                child: Center(
                   child: AnimatedTextKit(
                     animatedTexts: [
                       ColorizeAnimatedText(
-                        '最近活動',
+                        '  熱門活動',
                         textStyle: colorizeTextStyle,
                         colors: colorizeColors,
                       ),
                       ColorizeAnimatedText(
-                        '最近活動',
+                        '  熱門活動',
                         textStyle: colorizeTextStyle,
                         colors: colorizeColors,
                       ),
                       ColorizeAnimatedText(
-                        '最近活動',
+                        '  熱門活動',
                         textStyle: colorizeTextStyle,
                         colors: colorizeColors,
                       ),
@@ -152,7 +158,6 @@ class _HomePageState extends State<HomePage> {
                     isRepeatingAnimation: true,
                     repeatForever: true,
                   ),
-                ),
               ),
             ),
             SizedBox(
@@ -175,7 +180,7 @@ class _HomePageState extends State<HomePage> {
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) =>
-                                          ActivityInformationPage(
+                                          NewActivityInformationPage(
                                             data: list[index],
                                           ),
                                     ),
@@ -198,7 +203,7 @@ class _HomePageState extends State<HomePage> {
                                               )
                                           ),
                                           child: Image.asset(
-                                            'assets/play_store_512.png',
+                                            'assets/風景1.jpg',
                                             fit: BoxFit.cover,
                                           ),
                                         ),
@@ -239,21 +244,20 @@ class _HomePageState extends State<HomePage> {
 
 
             SizedBox(
-              child: Center(
                 child: AnimatedTextKit(
                   animatedTexts: [
                     ColorizeAnimatedText(
-                      '參加的團',
+                      '  即將出團',
                       textStyle: colorizeTextStyle,
                       colors: colorizeColors,
                     ),
                     ColorizeAnimatedText(
-                      '參加的團',
+                      '  即將出團',
                       textStyle: colorizeTextStyle,
                       colors: colorizeColors,
                     ),
                     ColorizeAnimatedText(
-                      '參加的團',
+                      '  即將出團',
                       textStyle: colorizeTextStyle,
                       colors: colorizeColors,
                     ),
@@ -261,7 +265,6 @@ class _HomePageState extends State<HomePage> {
                   isRepeatingAnimation: true,
                   repeatForever: true,
                 ),
-              ),
             ),
 
 
@@ -283,11 +286,12 @@ class _HomePageState extends State<HomePage> {
                           itemBuilder: (context, index) {
                             return GestureDetector(
                                 onTap: () {
+                                  print(today);
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) =>
-                                          ActivityInformationPage(
+                                          NewActivityInformationPage(
                                             data: list[index],
                                           ),
                                     ),
@@ -313,7 +317,7 @@ class _HomePageState extends State<HomePage> {
                                             )
                                           ),
                                           child: Image.asset(
-                                            'assets/play_store_512.png',
+                                            'assets/風景2.jpg',
                                             fit: BoxFit.cover,
                                           ),
                                         ),
@@ -352,7 +356,17 @@ class _HomePageState extends State<HomePage> {
                 )
             ),
             SizedBox(height: 30,),
-            Image.asset("assets/長輩扁.jpg")
+            Container(
+              child: TableCalendar(
+                rowHeight: 43,
+                //locale: 'zh_CN',
+                focusedDay: today,
+                firstDay: DateTime.utc(2020,5,9), 
+                lastDay: DateTime.utc(2028,5,9),
+
+              ),
+            )
+            //Image.asset("assets/長輩扁.jpg")
 
           ],
         ),
