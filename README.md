@@ -1,6 +1,6 @@
 # with_database
 
-A new Flutter project.
+A Flutter project to pratice the dart language.
 
 ## Getting Started
 
